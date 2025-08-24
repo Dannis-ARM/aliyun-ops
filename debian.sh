@@ -1,3 +1,5 @@
+# Ref to https://www.cnblogs.com/smlile-you-me/p/17727308.html
+
 sudo cat <<'EOF' | sudo tee /etc/apt/sources.list
 
 deb https://mirrors.aliyun.com/debian/ bookworm main non-free non-free-firmware contrib
