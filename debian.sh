@@ -1,0 +1,12 @@
+sudo cat <<'EOF' | sudo tee /etc/apt/sources.list
+
+deb https://mirrors.aliyun.com/debian/ bookworm main non-free non-free-firmware contrib
+deb-src https://mirrors.aliyun.com/debian/ bookworm main non-free non-free-firmware contrib
+deb https://mirrors.aliyun.com/debian-security/ bookworm-security main
+deb-src https://mirrors.aliyun.com/debian-security/ bookworm-security main
+deb https://mirrors.aliyun.com/debian/ bookworm-updates main non-free non-free-firmware contrib
+deb-src https://mirrors.aliyun.com/debian/ bookworm-updates main non-free non-free-firmware contrib
+deb https://mirrors.aliyun.com/debian/ bookworm-backports main non-free non-free-firmware contrib
+deb-src https://mirrors.aliyun.com/debian/ bookworm-backports main non-free non-free-firmware contrib
+
+EOF
