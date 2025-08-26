@@ -21,3 +21,9 @@ jobs:
 
       - name: List output folder contents
         run: ls -l output
+
+      - name: Upload zip as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sh_scripts_zip
+          path: output/sh_scripts.zip
