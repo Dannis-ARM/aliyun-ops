@@ -6,6 +6,7 @@ on:
       - main
   workflow_dispatch:
 
+
 jobs:
   package-sh:
     runs-on: ubuntu-latest
@@ -27,3 +28,13 @@ jobs:
         with:
           name: sh_scripts_zip
           path: output/sh_scripts.zip
+  
+  send-mail:
+    needs: package-sh
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sh_scripts_zip
+          path: output
