@@ -1,0 +1,23 @@
+name: Package Shell Scripts
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  package-sh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create output folder
+        run: mkdir -p output
+
+      - name: Package all .sh files
+        run: zip -j output/sh_scripts.zip *.sh
+
+      - name: List output folder contents
+        run: ls -l output
