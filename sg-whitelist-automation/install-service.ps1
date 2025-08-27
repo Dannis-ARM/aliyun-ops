@@ -1,10 +1,9 @@
-# PowerShell script to register the Go program as a scheduled task
+# PowerShell script to create a shortcut for the Go program in the user's Startup folder
 
 # Define variables
-$TaskName = "AliyunSGWhitelist"
-$Description = "Automatically updates Alibaba Cloud Security Group with current public IP."
 $GoProgramPath = Join-Path $PSScriptRoot "dist\sg-whitelist-automation.exe" # Assuming the compiled Go executable is in the 'dist' subdirectory
-$LogFilePath = Join-Path $PSScriptRoot "sg-whitelist-automation.log"
+$StartupFolder = [Environment]::GetFolderPath('Startup')
+$ShortcutPath = Join-Path $StartupFolder "sg-whitelist-automation.lnk"
 
 # Check if the Go executable exists
 if (-not (Test-Path $GoProgramPath)) {
@@ -12,48 +11,15 @@ if (-not (Test-Path $GoProgramPath)) {
     Exit 1
 }
 
-# Create a scheduled task
-Write-Host "Creating scheduled task '$TaskName'..."
+Write-Host "Creating shortcut in Startup folder..."
 
-# Action: Run the Go program
-$Action = New-ScheduledTaskAction `
-    -Execute $GoProgramPath `
-    -Argument "> `"$LogFilePath`" 2>&1"
+# Create WScript.Shell COM object
+$WshShell = New-Object -ComObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut($ShortcutPath)
+$Shortcut.TargetPath = $GoProgramPath
+$Shortcut.WorkingDirectory = Split-Path $GoProgramPath
+$Shortcut.WindowStyle = 1
+$Shortcut.Description = "Automatically updates Alibaba Cloud Security Group with current public IP."
+$Shortcut.Save()
 
-# Trigger: On system startup
-$Trigger = New-ScheduledTaskTrigger `
-    -AtStartup
-
-# Settings: Run with highest privileges, allow to run on demand, stop if longer than 1 hour
-$Settings = New-ScheduledTaskSettingsSet `
-    -RunLevel Highest `
-    -AllowStartOnDemand `
-    -StopIfGoingOnBatteries `
-    -DontStopIfGoingOnBatteries `
-    -ExecutionTimeLimit (New-TimeSpan -Hours 1)
-
-# Principal: Run as SYSTEM user
-$Principal = New-ScheduledTaskPrincipal `
-    -UserID "SYSTEM" `
-    -LogonType ServiceAccount
-
-# Register the scheduled task (split into multiple lines for readability)
-Register-ScheduledTask `
-    -TaskName $TaskName `
-    -Description $Description `
-    -Action $Action `
-    -Trigger $Trigger `
-    -Settings $Settings `
-    -Principal $Principal `
-    -Force
-
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "Scheduled task '$TaskName' created successfully."
-    Write-Host "The program will run on system startup and log output to $LogFilePath."
-}
-else {
-    Write-Host "Error creating scheduled task '$TaskName'. Exit code: $LASTEXITCODE"
-}
-
-# Optional: Run the task immediately for testing
-# Start-ScheduledTask -TaskName $TaskName
+Write-Host "Shortcut created at $ShortcutPath. The program will run automatically when you log in."
