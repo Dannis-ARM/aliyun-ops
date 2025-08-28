@@ -1,6 +1,8 @@
 package main
 
 import (
+	// Added for command-line flag parsing
+	"flag"
 	"fmt"
 	"io" // Use "io" instead of "io/ioutil"
 	"net/http"
@@ -19,6 +21,14 @@ const (
 	SECURITY_GROUP_ID_ENV = "ALIBABA_CLOUD_SECURITY_GROUP_ID"
 )
 
+// Variables to hold configuration values
+var (
+	accessKeyID     string
+	accessKeySecret string
+	regionID        string
+	securityGroupID string
+)
+
 func getPublicIP() (string, error) {
 	resp, err := http.Get("https://checkip.amazonaws.com")
 	if err != nil {
@@ -35,10 +45,37 @@ func getPublicIP() (string, error) {
 }
 
 func main() {
-	// Load .env file
+	// Define command-line flags
+	flag.StringVar(&accessKeyID, "access-key-id", "", "Alibaba Cloud Access Key ID")
+	flag.StringVar(&accessKeySecret, "access-key-secret", "", "Alibaba Cloud Access Key Secret")
+	flag.StringVar(&regionID, "region-id", "", "Alibaba Cloud Region ID")
+	flag.StringVar(&securityGroupID, "security-group-id", "", "Alibaba Cloud Security Group ID")
+	flag.Parse()
+
+	// Load .env file as a fallback
 	err := godotenv.Load(".env")
 	if err != nil {
-		fmt.Printf("Warning: Error loading .env file, falling back to system environment variables: %v\n", err)
+		fmt.Printf("Warning: Error loading .env file, falling back to environment variables: %v\n", err)
+	}
+
+	// Prioritize configuration: flags > environment variables > .env file
+	if accessKeyID == "" {
+		accessKeyID = os.Getenv(ACCESS_KEY_ID_ENV)
+	}
+	if accessKeySecret == "" {
+		accessKeySecret = os.Getenv(ACCESS_KEY_SECRET_ENV)
+	}
+	if regionID == "" {
+		regionID = os.Getenv(REGION_ID_ENV)
+	}
+	if securityGroupID == "" {
+		securityGroupID = os.Getenv(SECURITY_GROUP_ID_ENV)
+	}
+
+	// Validate credentials
+	if accessKeyID == "" || accessKeySecret == "" || regionID == "" || securityGroupID == "" {
+		fmt.Printf("Error: Alibaba Cloud credentials (Access Key ID, Access Key Secret, Region ID, Security Group ID) must be provided via command-line flags, environment variables, or a .env file.\n")
+		os.Exit(1)
 	}
 
 	// 1. Get public IP
@@ -49,18 +86,7 @@ func main() {
 	}
 	fmt.Printf("Current public IP: %s\n", publicIP)
 
-	// 2. Get Alibaba Cloud credentials and region from environment variables
-	accessKeyID := os.Getenv(ACCESS_KEY_ID_ENV)
-	accessKeySecret := os.Getenv(ACCESS_KEY_SECRET_ENV)
-	regionID := os.Getenv(REGION_ID_ENV)
-	securityGroupID := os.Getenv(SECURITY_GROUP_ID_ENV)
-
-	if accessKeyID == "" || accessKeySecret == "" || regionID == "" || securityGroupID == "" {
-		fmt.Printf("Error: Alibaba Cloud credentials (ALIBABA_CLOUD_ACCESS_KEY_ID, ALIBABA_CLOUD_ACCESS_KEY_SECRET, ALIBABA_CLOUD_REGION_ID, ALIBABA_CLOUD_SECURITY_GROUP_ID) must be set as environment variables.\n")
-		os.Exit(1)
-	}
-
-	// 3. Create ECS client
+	// 2. Create ECS client
 	client, err := ecs.NewClientWithAccessKey(regionID, accessKeyID, accessKeySecret)
 	if err != nil {
 		fmt.Printf("Error creating ECS client: %v\n", err)
@@ -80,10 +106,13 @@ func main() {
 
 	ruleExists := false
 	for _, permission := range describeSecurityGroupAttributeResponse.Permissions.Permission {
-		if permission.IpProtocol == "tcp" &&
+		fmt.Printf("Checking permission: IpProtocol=%s, PortRange=%s, SourceCidrIp=%s, Direction=%s, Policy=%s, NicType=%s\n",
+			permission.IpProtocol, permission.PortRange, permission.SourceCidrIp, permission.Direction, permission.Policy, permission.NicType)
+
+		if strings.ToLower(permission.IpProtocol) == "tcp" &&
 			permission.PortRange == "443/443" &&
 			permission.SourceCidrIp == publicIP+"/32" &&
-			permission.Direction == "ingress" {
+			permission.Direction == "ingress" { // Added case-insensitive NicType check
 			ruleExists = true
 			break
 		}
@@ -103,6 +132,7 @@ func main() {
 	authorizeSecurityGroupRequest.SourceCidrIp = publicIP + "/32"
 	authorizeSecurityGroupRequest.Policy = "accept"
 	authorizeSecurityGroupRequest.NicType = "internet" // Changed to "internet" for public IP access
+	fmt.Printf("Attempting to add rule with NicType: %s\n", authorizeSecurityGroupRequest.NicType)
 
 	_, err = client.AuthorizeSecurityGroup(authorizeSecurityGroupRequest)
 	if err != nil {
