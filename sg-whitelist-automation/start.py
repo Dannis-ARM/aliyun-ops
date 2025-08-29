@@ -14,3 +14,6 @@ print("\n")
 # Run the built executable
 exe_path = project_dir / 'dist' / 'sg-whitelist-automation.exe'
 subprocess.run([str(exe_path)], check=True)
+
+# Run install-service.py
+subprocess.run(['python', project_dir / 'install-service.py'], check=True)
