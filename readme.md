@@ -1,3 +1,7 @@
+### Remote
+git remote remove origin
+git remote add origin git@github.com:Dannis-ARM/aliyun-ops.git
+
 ### SSH
 
 ```cmd
