@@ -207,3 +207,12 @@ marimo/_lsp/
 __marimo__/
 
 .ddns_go_config.yaml
+
+test.*
+test*.py
+*.log
+.tar
+.gz
+.tar.gz
+
+sandbox/

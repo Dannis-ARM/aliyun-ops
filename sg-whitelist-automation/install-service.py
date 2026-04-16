@@ -3,13 +3,11 @@
 import sys
 from pathlib import Path
 import os # Keep os for os.environ.get
+import argparse
 
-def create_startup_script():
+def create_startup_script(service_executive_path: Path):
     # Define variables
-    script_dir = Path(__file__).resolve().parent
-    go_program_path = (
-        script_dir / "dist" / "sg-whitelist-automation.exe"
-    )
+    go_program_path = service_executive_path
     
     # Get Startup folder path using standard environment variables
     # os.environ.get('APPDATA') returns a string, so convert to Path object
@@ -66,4 +64,15 @@ def create_startup_script():
         sys.exit(1)
 
 if __name__ == "__main__":
-    create_startup_script()
+    parser = argparse.ArgumentParser(
+        description="Create a batch file for the Go program in the user's Startup folder."
+    )
+    parser.add_argument(
+        "-s",
+        "--service_executive_path",
+        type=str,
+        required=True,
+        help="Path to the Go executable."
+    )
+    args = parser.parse_args()
+    create_startup_script(Path(args.service_executive_path).resolve())

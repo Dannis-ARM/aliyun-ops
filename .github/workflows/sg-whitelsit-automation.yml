@@ -1,0 +1,60 @@
+name: Build Go
+
+on:
+  push:
+    branches:
+      - main
+      - cicd-*
+
+jobs:
+  build-go-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25' # Or your desired Go version
+
+      - name: Build Go applications
+        run: |
+          mkdir -p output
+          cd sg-whitelist-automation
+          # Build for Linux
+          env GOOS=linux GOARCH=amd64 go build -o ../output/sg-whitelist-automation-linux main.go
+          # Build for Windows
+          env GOOS=windows GOARCH=amd64 go build -o ../output/sg-whitelist-automation-windows.exe main.go
+
+      - name: List output folder contents
+        run: ls -l output
+
+      - name: Upload Go executables as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sg_whitelist_automation_executables
+          path: output/
+
+  deploy:
+    needs: build-go-app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sg_whitelist_automation_executables
+          path: ./sg_whitelist_automation_executables
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.ALIYUN_ECS_MINI_CICD_KEY }}
+
+      - name: Deploy to ECS
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d '/' -f 2)
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          REMOTE_PATH="~/downloads/${REPO_NAME}-${TIMESTAMP}"
+          ssh -o StrictHostKeyChecking=no debian@ecs-mini.aliyun.gilded-age.cn "mkdir -p ${REMOTE_PATH}"
+          scp -o StrictHostKeyChecking=no -r ./sg_whitelist_automation_executables/* debian@ecs-mini.aliyun.gilded-age.cn:${REMOTE_PATH}
