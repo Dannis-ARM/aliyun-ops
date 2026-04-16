@@ -162,7 +162,7 @@ jobs:
       - name: Set up SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.ALIYUN_ECS_MINI_CICD_KEY }}
+          ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
 
       - name: Deploy to Staging
         env:
