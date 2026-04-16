@@ -1,0 +1,1 @@
+ssh -i "%USERPROFILE%\.ssh\aliops-key" "aliops@ecs-mini.aliyun.gilded-age.cn"

@@ -1,0 +1,1 @@
+ssh -i "%USERPROFILE%\.ssh\ali-ecs-key.pem" "debian@ecs-mini.aliyun.gilded-age.cn"
