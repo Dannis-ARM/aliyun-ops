@@ -30,7 +30,7 @@ def install_pgvector(ssh: SSHClientV2, local_dir: Path, activate_dir: str) -> No
 
 def activate_execute_script(ssh: SSHClientV2, local_dir: Path, activate_dir: str, glob_pattern: str = "*.sh") -> None:
     exec_scripts = set()
-    for file in Path(local_dir).glob("glob_pattern"):
+    for file in Path(local_dir).glob(glob_pattern):
         exec_scripts.add((file.absolute(), f"{activate_dir}/{file.name}"))
     for script_path, remote_path in exec_scripts:
         ssh.upload(script_path, remote_path)
@@ -39,7 +39,7 @@ def activate_execute_script(ssh: SSHClientV2, local_dir: Path, activate_dir: str
 
 def upload(ssh: SSHClientV2, local_dir: Path, activate_dir: str, glob_pattern: str = "*.yml") -> None:
     sftp_mappings = set()
-    for file in Path(local_dir).glob(glob_pattern):
+    for file in Path(local_dir).absolute().glob(glob_pattern):
         sftp_mappings.add((file.absolute(), f"{activate_dir}/{file.name}"))
     for script_path, remote_path in sftp_mappings:
         ssh.upload(script_path, remote_path)
