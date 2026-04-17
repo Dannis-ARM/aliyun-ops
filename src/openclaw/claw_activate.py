@@ -69,8 +69,8 @@ def main():
         sys.exit(1)
 
     # mirror_setup(ssh)
-    pgvector_setup(ssh)
-    # goclaw_setup(ssh)
+    # pgvector_setup(ssh)
+    goclaw_setup(ssh)
 
 if __name__ == "__main__":
     main()

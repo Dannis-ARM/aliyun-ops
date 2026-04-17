@@ -15,4 +15,4 @@
       - "127.0.0.1:5432:5432" # 建议仅监听本地，防止 ECS 公网 IP 被扫描
 
 volumes:
-  postgres_pgdata
+  postgres_pgdata: 

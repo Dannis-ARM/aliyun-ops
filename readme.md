@@ -123,6 +123,12 @@ ssh -i "%USERPROFILE%\.ssh\aliops-key" -L 9090:localhost:9090 "aliops@ecs-mini.a
 
 : ssh -i "%USERPROFILE%\.ssh\aliops-key" -L 18790:localhost:18790 "aliops@ecs-mini.aliyun.gilded-age.cn" -N
 source .env.local && ./goclaw
+
+Minimax api:
+- https://api.minimax.io/v1
+- https://api.minimaxi.com/v1
+
+
 ```
 
 # May consider this 

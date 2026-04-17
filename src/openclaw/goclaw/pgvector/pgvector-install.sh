@@ -10,7 +10,7 @@ set -o errexit  # 遇到错误立即退出
 set -o nounset  # 使用未定义的变量时退出
 set -o pipefail # 捕获管道中的错误
 
-source ~/.bashrc
+export PATH="${HOME}/.local/bin:${PATH}"
 
 # 1. 配置与变量 (Configuration)
 PROJECT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
