@@ -17,6 +17,7 @@ from cfgs import (
     ACTIVATE_LOG_FILE_NAME,
 )
 from _create_aliops_user import create_aliops_user
+import utils
 
 # Setup logging
 logger = setup_logging(
