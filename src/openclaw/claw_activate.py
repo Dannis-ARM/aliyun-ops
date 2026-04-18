@@ -22,6 +22,12 @@ logger = setup_logging(name=__file__)
 
 downloader = FileDownloader(timeout=60, use_clash_proxy=True)
 
+def headless_browser(ssh: SSHClientV2):
+    link = 'https://github.com/vercel-labs/agent-browser/releases/download/v0.26.0/agent-browser-linux-x64'
+    downloaded_path = downloader.download(link)
+    ssh.upload(downloaded_path, "~/.local/bin/agent-browser")
+    ssh.run("chmod +x ~/.local/bin/agent-browser")
+
 def mirror_setup(ssh: SSHClientV2) -> None:
     utils.activate_execute_script(
         ssh,
@@ -53,11 +59,20 @@ def goclaw_setup(ssh: SSHClientV2) -> None:
     downloaded_path = downloader.download(goclaw_url)
     ssh.upload(downloaded_path, "~/.activate/goclaw.tar.gz")
 
+    # mv Binary
     utils.activate_execute_script(
         ssh,
         Path(__file__).parent.absolute() / "goclaw",
         "~/.activate/goclaw",
         "deploy*.sh"
+    )
+
+    # bring goclaw up
+    utils.activate_execute_script(
+        ssh,
+        Path(__file__).parent.absolute() / "goclaw",
+        "~/.activate/goclaw",
+        "start*.sh"
     )
 
 def main():
@@ -71,6 +86,7 @@ def main():
     # mirror_setup(ssh)
     # pgvector_setup(ssh)
     goclaw_setup(ssh)
+    headless_browser(ssh)
 
 if __name__ == "__main__":
     main()
