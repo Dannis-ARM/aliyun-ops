@@ -20,3 +20,5 @@ else
     echo "[$(date)] Error: $SRC not found" >&2
     exit 1
 fi
+
+cd $DEST && /bin/bash $DEST/_start_goclaw.sh

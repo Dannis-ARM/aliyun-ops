@@ -55,9 +55,17 @@ def pgvector_setup(ssh: SSHClientV2) -> None:
 
 def goclaw_setup(ssh: SSHClientV2) -> None:
     # download go binary
-    goclaw_url = "https://github.com/nextlevelbuilder/goclaw/releases/download/v3.8.5/goclaw-3.8.5-linux-amd64.tar.gz"
+    goclaw_url = "https://github.com/nextlevelbuilder/goclaw/releases/download/v3.9.2/goclaw-3.9.2-linux-amd64.tar.gz"
     downloaded_path = downloader.download(goclaw_url)
     ssh.upload(downloaded_path, "~/.activate/goclaw.tar.gz")
+
+    # bring goclaw up
+    utils.upload(
+        ssh,
+        Path(__file__).parent.absolute() / "goclaw",
+        "~/programs/goclaw",
+        "_start*.sh"
+    )
 
     # mv Binary
     utils.activate_execute_script(
@@ -65,14 +73,6 @@ def goclaw_setup(ssh: SSHClientV2) -> None:
         Path(__file__).parent.absolute() / "goclaw",
         "~/.activate/goclaw",
         "deploy*.sh"
-    )
-
-    # bring goclaw up
-    utils.activate_execute_script(
-        ssh,
-        Path(__file__).parent.absolute() / "goclaw",
-        "~/.activate/goclaw",
-        "start*.sh"
     )
 
 def main():
@@ -84,9 +84,9 @@ def main():
         sys.exit(1)
 
     # mirror_setup(ssh)
-    # pgvector_setup(ssh)
-    goclaw_setup(ssh)
-    headless_browser(ssh)
+    pgvector_setup(ssh)
+    # goclaw_setup(ssh)
+    # headless_browser(ssh)
 
 if __name__ == "__main__":
     main()

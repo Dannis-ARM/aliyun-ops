@@ -21,3 +21,7 @@ location = "dockerproxy.com"
 location = "mirror.baidubce.com"
 
 EOF
+
+# podman setups
+loginctl enable-linger $USER
+systemctl --user enable --now podman-restart.service
