@@ -55,7 +55,8 @@ def pgvector_setup(ssh: SSHClientV2) -> None:
 
 def goclaw_setup(ssh: SSHClientV2) -> None:
     # download go binary
-    goclaw_url = "https://github.com/nextlevelbuilder/goclaw/releases/download/v3.9.2/goclaw-3.9.2-linux-amd64.tar.gz"
+    # goclaw_url = "https://github.com/nextlevelbuilder/goclaw/releases/download/v3.9.2/goclaw-3.9.2-linux-amd64.tar.gz"
+    goclaw_url = "https://github.com/nextlevelbuilder/goclaw/releases/download/v3.10.0/goclaw-3.10.0-linux-amd64.tar.gz"
     downloaded_path = downloader.download(goclaw_url)
     ssh.upload(downloaded_path, "~/.activate/goclaw.tar.gz")
 
@@ -83,8 +84,8 @@ def main():
         logger.error("Cannot connect to remote host.")
         sys.exit(1)
 
-    # mirror_setup(ssh)
-    pgvector_setup(ssh)
+    mirror_setup(ssh)
+    # pgvector_setup(ssh)
     # goclaw_setup(ssh)
     # headless_browser(ssh)
 

@@ -1,67 +1,45 @@
 #!/bin/bash
 
-# ==============================================================================
-# Script Name: setup_db.sh
-# Description: Deploy pgvector via podman-compose with automated health checks.
-# Author: Dev
-# ==============================================================================
+# 配置严格模式
+set -euo pipefail
 
-set -o errexit  # 遇到错误立即退出
-set -o nounset  # 使用未定义的变量时退出
-set -o pipefail # 捕获管道中的错误
+# 1. 环境初始化：解决命令找不到与路径偏差
+export PATH="${HOME}/.local/bin:/usr/local/bin:/usr/bin:/bin:${PATH}"
+PROJECT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)
 
-export PATH="${HOME}/.local/bin:${PATH}"
-
-# 1. 配置与变量 (Configuration)
-PROJECT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-COMPOSE_FILE="${PROJECT_DIR}/pgvector-compose.yml"
+# 2. 变量定义 (带默认值保护)
 CONTAINER_NAME="pgvector-db"
-DB_NAME="goclaw"
-DB_USER="postgres"
-MAX_RETRIES=20
+DB_NAME="${DB_NAME:-goclaw}"
+DB_USER="${DB_USER:-postgres}"
+MAX_RETRIES=${MAX_RETRIES:-20}
+COMPOSE_FILE="${PROJECT_DIR}/pgvector-compose.yml"
 
-# 日志辅助函数
-log() {
-    echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')] $1"
-}
+# 日志美化
+log()   { printf "\033[0;32m[$(date +'%T')] INFO: %b\033[0m\n" "$1"; }
+error() { printf "\033[0;31m[$(date +'%T')] ERROR: %b\033[0m\n" "$1" >&2; }
 
-# 2. 检查依赖 (Pre-flight check)
-if ! command -v podman-compose &> /dev/null; then
-    log "ERROR: podman-compose could not be found. Please install it first."
-    exit 1
-fi
+# 3. 预检
+[[ ! -f "${COMPOSE_FILE}" ]] && { error "找不到文件: ${COMPOSE_FILE}"; exit 1; }
+command -v podman-compose &>/dev/null || { error "未安装 podman-compose"; exit 1; }
 
-# 3. 环境清理 (Teardown)
-log "🚀 Destroying existing environment..."
-# 使用 -f 指定文件，避免上下文歧义
-podman-compose -f "${COMPOSE_FILE}" down --volumes || true
-podman rm -f "${CONTAINER_NAME}" 2>/dev/null || true
-
-# 4. 启动服务 (Provision)
-log "🆙 Starting services using ${COMPOSE_FILE}..."
-# 注意：某些版本的 podman-compose 不需要第二个 'compose' 关键字
+# 4. 启动与更新
+log "🚀 正在同步容器状态..."
 podman-compose -f "${COMPOSE_FILE}" up -d
 
-# 5. 健康检查 (Health Check)
-log "🧪 Waiting for Postgres to be ready..."
-RETRIES=0
-# 增加一个额外的 check，确保能够真正执行查询
-until podman exec "${CONTAINER_NAME}" psql -U "${DB_USER}" -c "SELECT 1" &> /dev/null; do
-    RETRIES=$((RETRIES + 1))
-    if [ "${RETRIES}" -gt "${MAX_RETRIES}" ]; then
-        log "ERROR: Database failed to respond to psql within timeout."
-        exit 1
+# 5. 健康检查 (使用 pg_isready)
+log "🧪 等待数据库就绪..."
+for i in $(seq 1 "${MAX_RETRIES}"); do
+    if podman exec "${CONTAINER_NAME}" pg_isready -U "${DB_USER}" -d "${DB_NAME}" &>/dev/null; then
+        log "✅ 数据库已就绪"
+        break
     fi
-    log "Waiting... (${RETRIES}/${MAX_RETRIES})"
+    [[ "$i" -eq "${MAX_RETRIES}" ]] && { error "等待超时"; exit 1; }
     sleep 2
 done
 
-# 6. 数据库初始化 (Initialization)
-# 既然容器启动时已经通过 POSTGRES_DB 创建了 goclaw，这里直接启用扩展即可
-log "🧬 Enabling pgvector extension on database '${DB_NAME}'..."
+# 6. 初始化扩展
+log "🧬 启用 pgvector 扩展..."
+podman exec "${CONTAINER_NAME}" psql -U "${DB_USER}" -d "${DB_NAME}" \
+    -c "CREATE EXTENSION IF NOT EXISTS vector;" &>/dev/null
 
-# 使用 -t (tuples only) 和 -A (unaligned) 来简化输出检查
-# 即使 goclaw 在启动时还没准备好，这里的命令也会在连接成功后重试
-podman exec "${CONTAINER_NAME}" psql -U "${DB_USER}" -d "${DB_NAME}" -c "CREATE EXTENSION IF NOT EXISTS vector;"
-
-log "✨ All set! Database '${DB_NAME}' is ready."
+log "✨ 部署成功！"
