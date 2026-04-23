@@ -68,13 +68,21 @@ def goclaw_setup(ssh: SSHClientV2) -> None:
         "_start*.sh"
     )
 
-    # mv Binary
+    # install goclaw service and bring up
+    utils.upload(
+        ssh,
+        Path(__file__).parent.absolute() / "goclaw",
+        "~/.activate/goclaw",
+        "*.service"
+    )
+
     utils.activate_execute_script(
         ssh,
         Path(__file__).parent.absolute() / "goclaw",
         "~/.activate/goclaw",
         "deploy*.sh"
     )
+
 
 def main():
     ssh: SSHClientV2 = SSHClientV2(
@@ -84,9 +92,9 @@ def main():
         logger.error("Cannot connect to remote host.")
         sys.exit(1)
 
-    mirror_setup(ssh)
+    # mirror_setup(ssh)
     # pgvector_setup(ssh)
-    # goclaw_setup(ssh)
+    goclaw_setup(ssh)
     # headless_browser(ssh)
 
 if __name__ == "__main__":
