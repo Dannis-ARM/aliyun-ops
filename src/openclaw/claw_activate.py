@@ -60,7 +60,7 @@ def goclaw_setup(ssh: SSHClientV2) -> None:
     downloaded_path = downloader.download(goclaw_url)
     ssh.upload(downloaded_path, "~/.activate/goclaw.tar.gz")
 
-    # bring goclaw up
+    # mv _start scritps into programs
     utils.upload(
         ssh,
         Path(__file__).parent.absolute() / "goclaw",

@@ -44,9 +44,11 @@ echo "✅ Copied service file to systemd directory"
 systemctl --user daemon-reload
 echo "✅ Reloaded systemd user daemon"
 
-# 5. 启用并启动服务
-systemctl --user enable --now goclaw.service
-echo "✅ Enabled and started goclaw service"
+# 5. 启用并重启服务
+echo "🔄 Applying service configuration and restarting..."
+systemctl --user enable goclaw.service
+systemctl --user restart goclaw.service
+echo "✅ goclaw service is enabled and has been restarted to apply changes."
 
 # 6. 开启用户linger（退出登录后服务仍运行）
 loginctl enable-linger $USER
