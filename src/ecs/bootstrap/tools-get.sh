@@ -41,6 +41,7 @@ main() {
         cron
         htop
         sysstat
+        zip
         unzip
         git
         make
