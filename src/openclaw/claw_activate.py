@@ -95,8 +95,8 @@ def main():
 
     # mirror_setup(ssh)
     # pgvector_setup(ssh)
-    goclaw_setup(ssh)
-    # headless_browser(ssh)
+    # goclaw_setup(ssh)
+    headless_browser(ssh)
 
 if __name__ == "__main__":
     main()
