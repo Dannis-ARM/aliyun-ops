@@ -93,10 +93,10 @@ def main():
         logger.error("Cannot connect to remote host.")
         sys.exit(1)
 
-    # mirror_setup(ssh)
+    mirror_setup(ssh)
     # pgvector_setup(ssh)
     # goclaw_setup(ssh)
-    headless_browser(ssh)
+    # headless_browser(ssh)
 
 if __name__ == "__main__":
     main()

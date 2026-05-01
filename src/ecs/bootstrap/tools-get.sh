@@ -45,6 +45,7 @@ main() {
         unzip
         git
         make
+        jq
     )
     
     local network_tools=(

@@ -7,4 +7,5 @@ ssh -i "%USERPROFILE%\.ssh\aliops-key" ^
     -o ExitOnForwardFailure=yes ^
     -L 9090:127.0.0.1:9090 ^
     -L 18790:127.0.0.1:18790 ^
+    -L 3000:127.0.0.1:3000 ^
     -N "aliops@ecs-mini.aliyun.gilded-age.cn"
