@@ -1,0 +1,25 @@
+[Unit]
+Description=Goclaw Automatic Deployment Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/programs/goclaw
+ExecStart=/bin/bash %h/programs/goclaw/_start_goclaw.sh
+
+# Restart
+Restart=always
+RestartSec=5s
+
+Environment="PATH=/usr/local/bin:/usr/bin:/bin:%h/.local/bin"
+Environment="PYTHONUNBUFFERED=1"
+Environment="NO_PROXY=localhost,127.0.0.1"
+
+# 日志管理
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=goclaw
+
+[Install]
+WantedBy=default.target

@@ -17,5 +17,5 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 default = true
 EOF
 
-. ~/.bashrc
+export PATH="$HOME/.local/bin:$PATH"
 uv python install 3.14

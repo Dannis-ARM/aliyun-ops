@@ -41,9 +41,11 @@ main() {
         cron
         htop
         sysstat
+        zip
         unzip
         git
         make
+        jq
     )
     
     local network_tools=(

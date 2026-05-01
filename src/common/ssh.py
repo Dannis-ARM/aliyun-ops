@@ -365,7 +365,9 @@ class SSHClientV2:
                 
                 channel.close()
                 
-                self.logger.info("✅ [SSH] Exit code: %d", returncode)
+                # Return result with appropriate icon based on exit code
+                icon = "✅" if returncode == 0 else "❌"
+                self.logger.info("%s [SSH] Exit code: %d", icon, returncode)
                 self.logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
                 return subprocess.CompletedProcess(
                     args=command,
